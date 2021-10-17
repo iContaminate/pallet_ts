@@ -1,71 +1,46 @@
-import * as readline from "readline";
-
 import { V3 } from "./v3.js";
-
-import { ILayout, BasicLayout, findBestLayout } from "./layout/layouts.js";
-
-function setup_rl(): { (prompt: string): Promise<string>; done(): void; } {
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout
-	});
-
-	function ask(prompt: string): Promise<string> {
-		return new Promise((resolve, reject) => {
-			rl.question(prompt, function (response: string) {
-				resolve(response);
-			});
-		});
-	}
-
-	ask.done = () => rl.close();
-
-	return ask;
-}
+import { ILayout, findBestLayout } from "./layout/layouts.js";
+import { ReadlineWrapper } from "./readline-wrapper.js";
 
 async function main(): Promise<void> {
-	const dimsPattern = /(?<len>[0-9]+)x(?<wid>[0-9]+)x(?<hgt>[0-9]+)/;
-	const ask = setup_rl();
+	const readlineWrapper = new ReadlineWrapper;
 
-	let palletDimStr: string, boxDimStr: string;
+	const maxAttempts = 5;
+
+	const palletPrompt = "Enter pallet dims in LxWxH format (or blank for 48x42x60): ";
+	const palletPattern = /^(?:(?<len>[0-9]+)x(?<wid>[0-9]+)x(?<hgt>[0-9]+)|)$/; // matches blank string or <int>x<int>x<int>
+
+	const boxPrompt = "Enter box dimensions in LxWxH format: ";
+	const boxPattern = /(?<len>[0-9]+)x(?<wid>[0-9]+)x(?<hgt>[0-9]+)/; // matches blank string or <int>x<int>x<int>
+
 	let palletDims: V3, boxDims: V3;
+	let [len, wid, hgt]: number[] = [0, 0, 0];
 
 	try {
-		while (true) {
-			palletDimStr = await ask("Enter pallet dims in LxWxH format (or blank for 48x42x60): ");
-			let result = dimsPattern.exec(palletDimStr);
+		let pltMatches = await readlineWrapper.ask(palletPrompt, palletPattern, maxAttempts);
 
-			if (palletDimStr === "") { // use default if user just presses enter
-				palletDimStr = "48x42x60";
-				palletDims = new V3(48, 42, 60);
-				break;
-			}
-			else if (result !== null && result?.groups !== undefined) {
-				let [len, wid, hgt] = Object.values(result?.groups || []).map(Number);
-				palletDims = new V3(len, wid, hgt);
-				break;
-			}
-		}
+		if (pltMatches === null) throw Error("Invalid user input for pallet dimensions");
 
-		while (true) {
-			boxDimStr = await ask("Enter box dims in LxWxH format: ");
-			let result = dimsPattern.exec(boxDimStr);
+		// if there was input matched use the capture groups, otherwise you the default of 48x42x60
+		if (pltMatches[0] !== "") [len, wid, hgt] = pltMatches.slice(1).map((e) => parseInt(e, 10));
+		else[len, wid, hgt] = [48, 42, 60];
 
-			if (result !== null && result?.groups !== undefined) {
-				let [len, wid, hgt] = Object.values(result?.groups || []).map(Number);
-				boxDims = new V3(len, wid, hgt);
-				break;
-			}
-		}
+		palletDims = new V3(len, wid, hgt);
 
-		ask.done();
+		let boxMatches = await readlineWrapper.ask(boxPrompt, boxPattern, maxAttempts);
 
-		console.log(`Caculating best arrangement of a ${boxDimStr} box on a ${palletDimStr} pallet`);
+		if (boxMatches === null) throw Error("Invalid user input for box dimensions");
 
+		[len, wid, hgt] = boxMatches.slice(1).map((e) => parseInt(e, 10));
+
+		boxDims = new V3(len, wid, hgt);
+
+		console.log(`Caculating best arrangement of a ${boxDims} box on a ${palletDims} pallet`);
 		let bestLayout: ILayout = findBestLayout(palletDims, boxDims);
-
 		console.log(`description: ${bestLayout.description}\ncpt: ${bestLayout.cpt}  tpp: ${bestLayout.tpp}`);
-	} catch (error) { console.error(error); }
+	} catch (error) { console.log(""); console.error(error); }
+
+	readlineWrapper.done();
 }
 
 main();

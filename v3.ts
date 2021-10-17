@@ -40,6 +40,8 @@ class V3 {
     }
 
     copy(): V3 { return new V3(this.x, this.y, this.z); }
+
+    toString(): string { return `${this.x}x${this.y}x${this.z}` }
 }
 
 export { V3 };
