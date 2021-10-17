@@ -1,4 +1,4 @@
-import { V3 } from "./v3.js";
+import { DimensionSet } from "./dimension-set.js";
 import { ILayout, findBestLayout } from "./layout/layouts.js";
 import { ReadlineWrapper } from "./readline-wrapper.js";
 
@@ -13,7 +13,7 @@ async function main(): Promise<void> {
 	const boxPrompt = "Enter box dimensions in LxWxH format: ";
 	const boxPattern = /(?<len>[0-9]+)x(?<wid>[0-9]+)x(?<hgt>[0-9]+)/; // matches blank string or <int>x<int>x<int>
 
-	let palletDims: V3, boxDims: V3;
+	let palletDims: DimensionSet, boxDims: DimensionSet;
 	let [len, wid, hgt]: number[] = [0, 0, 0];
 
 	try {
@@ -25,7 +25,7 @@ async function main(): Promise<void> {
 		if (pltMatches[0] !== "") [len, wid, hgt] = pltMatches.slice(1).map((e) => parseInt(e, 10));
 		else[len, wid, hgt] = [48, 42, 60];
 
-		palletDims = new V3(len, wid, hgt);
+		palletDims = new DimensionSet(len, wid, hgt);
 
 		let boxMatches = await readlineWrapper.ask(boxPrompt, boxPattern, maxAttempts);
 
@@ -33,7 +33,7 @@ async function main(): Promise<void> {
 
 		[len, wid, hgt] = boxMatches.slice(1).map((e) => parseInt(e, 10));
 
-		boxDims = new V3(len, wid, hgt);
+		boxDims = new DimensionSet(len, wid, hgt);
 
 		console.log(`Caculating best arrangement of a ${boxDims} box on a ${palletDims} pallet`);
 		let bestLayout: ILayout = findBestLayout(palletDims, boxDims);

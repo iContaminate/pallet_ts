@@ -1,11 +1,11 @@
-import { V3 } from "../v3.js";
+import { DimensionSet } from "../dimension-set.js";
 
 import { ILayout } from "./layout.js";
 import { BasicLayout } from "./basic_layout.js";
 
 let LAYOUTS = [BasicLayout];
 
-function findBestLayout(pallet: V3, box: V3): ILayout {
+function findBestLayout(pallet: DimensionSet, box: DimensionSet): ILayout {
 	let results: Array<ILayout> = [];
 
 	let boxTurned = box.copy();
@@ -18,7 +18,8 @@ function findBestLayout(pallet: V3, box: V3): ILayout {
 		results.push(new Layout(pallet, boxTurned)); // flip len and wid
 	}
 
-	return results.sort((a, b) => (a.cpt * a.tpp) - (b.cpt * b.tpp))[0];
+	console.log(results)
+	return results.sort((a, b) => -((a.cpt * a.tpp) - (b.cpt * b.tpp)))[0];
 }
 
 export { ILayout, BasicLayout, findBestLayout };

@@ -1,4 +1,4 @@
-class V3 {
+export class DimensionSet {
     x: number;
     y: number;
     z: number;
@@ -9,7 +9,7 @@ class V3 {
         this.z = z;
     }
 
-    add(other: V3): V3 {
+    add(other: DimensionSet): DimensionSet {
         let result = this.copy();
 
         result.x += other.x;
@@ -19,7 +19,7 @@ class V3 {
         return result;
     }
 
-    divide_by(other: V3): V3 {
+    divide_by(other: DimensionSet): DimensionSet {
         let result = this.copy();
 
         result.x = result.x / other.x;
@@ -39,9 +39,7 @@ class V3 {
         return result;
     }
 
-    copy(): V3 { return new V3(this.x, this.y, this.z); }
+    copy(): DimensionSet { return new DimensionSet(this.x, this.y, this.z); }
 
     toString(): string { return `${this.x}x${this.y}x${this.z}` }
 }
-
-export { V3 };

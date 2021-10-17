@@ -1,4 +1,4 @@
-import { V3 } from "../v3.js";
+import { DimensionSet } from "../dimension-set.js";
 import { ILayout } from "./layout.js"
 
 class BasicLayout implements ILayout {
@@ -6,10 +6,10 @@ class BasicLayout implements ILayout {
 	cpt: number;
 	tpp: number;
 
-	#box: V3;
-	#pallet: V3;
+	#box: DimensionSet;
+	#pallet: DimensionSet;
 
-	constructor(pallet: V3, box: V3) {
+	constructor(pallet: DimensionSet, box: DimensionSet) {
 		this.description = `BasicLayout with ${box.x}" side of box along ${pallet.x}" side of pallet`;
 
 		this.#box = box.copy();
